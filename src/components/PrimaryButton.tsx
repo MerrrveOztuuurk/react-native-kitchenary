@@ -1,10 +1,10 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
-export default function modal() {
+export default function PrimaryButton() {
   return (
     <View>
-      <Text>modal</Text>
+      <Text>PrimaryButton</Text>
     </View>
   )
 }

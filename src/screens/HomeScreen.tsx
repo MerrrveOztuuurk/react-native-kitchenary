@@ -1,10 +1,10 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
-export default function modal() {
+export default function HomeScreen() {
   return (
     <View>
-      <Text>modal</Text>
+      <Text>HomeScreen</Text>
     </View>
   )
 }
