@@ -81,7 +81,7 @@ const HomeScreen = ({ navigation }: any) => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right", "bottom"]}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF7F0" />
       <View style={styles.container}>
       <Text style={styles.headerText}>Kitchenary</Text>
@@ -117,10 +117,25 @@ const HomeScreen = ({ navigation }: any) => {
             contentContainerStyle={{ paddingBottom: 150, paddingTop: 10 }}
           />
         )}
-        <AddRecipeButton
-          onPress={() => navigation.navigate("AddRecipe")}
-          title={"+ Tarif Ekle"}
-        />
+      <AddRecipeButton
+  onPress={() => navigation.navigate("AddRecipe")}
+  title={"+ Tarif Ekle"}
+  style={{
+    position: "absolute",
+    bottom: 25,
+    right: 25,
+    borderRadius: 30,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    backgroundColor: "#FF6F00",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
+    
+  }}
+/>
+
       </View>
     </SafeAreaView>
   );
@@ -138,21 +153,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 10,
   },
-  categoryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  chip: {
-    width: "30%", 
-    paddingVertical: 10,
-    backgroundColor: "#FFE6CC",
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
+categoryGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "flex-start",
+  gap: 8,
+  marginBottom: 20,
+},
+chip: {
+  width: "30%",
+  paddingVertical: 10,
+  backgroundColor: "#FFE6CC",
+  borderRadius: 15,
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 10,
+  shadowColor: "#000",
+  shadowOpacity: 0.05,
+  shadowOffset: { width: 0, height: 2 },
+  shadowRadius: 4,
+  elevation: 2,
+},
   chipSelected: {
     backgroundColor: "#FF6F00",
   },
@@ -165,19 +186,20 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  recipeCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 15,
-    borderRadius: 14,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 3,
-  },
+recipeCard: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: 15,
+  borderRadius: 14,
+  marginBottom: 10,
+  backgroundColor: "#FFF5E6",
+  shadowColor: "#000",
+  shadowOpacity: 0.08,
+  shadowOffset: { width: 0, height: 3 },
+  shadowRadius: 6,
+  elevation: 3,
+},
   recipeInfo: {
     flex: 1,
     marginRight: 10,
@@ -192,16 +214,19 @@ const styles = StyleSheet.create({
     color: "#FF6F00",
     marginTop: 3,
   },
-  emptyText: {
-    textAlign: "center",
-    color: "#999",
-    marginTop: 50,
-    fontSize: 16,
-  },
+emptyText: {
+  textAlign: "center",
+  color: "#FF6F00",
+  marginTop: 50,
+  marginBottom: 30,
+  fontSize: 18,
+  fontWeight: "500",
+},
   headerText: {
     fontSize: 32,
     fontWeight: "bold",
     color: "#FF6F00", 
     textAlign: "center", 
+    margin: 15
   },
 });

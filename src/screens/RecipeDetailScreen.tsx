@@ -36,7 +36,12 @@ const RecipeDetailScreen = ({ navigation }: any) => {
 
           <Text style={styles.sectionTitle}>🧂 Malzemeler</Text>
           <Text style={styles.text}>
-            {recipe.ingredients ? recipe.ingredients : "Malzeme bilgisi eklenmemiş."}
+           {recipe.ingredients
+                ? recipe.ingredients.split("\n").map((line, i) => (
+                <Text key={i} style={styles.text}>• {line} </Text>
+                ))
+          : <Text style={styles.text}>Malzeme bilgisi eklenmemiş.</Text>
+           }
           </Text>
           <Text style={styles.sectionTitle}>👩‍🍳 Yapılışı</Text>
           <Text style={styles.text}>
@@ -44,12 +49,21 @@ const RecipeDetailScreen = ({ navigation }: any) => {
           </Text>
 
           <Text style={styles.sectionTitle}>🔥 Pişirme Bilgileri</Text>
-          {(recipe.temperature || recipe.time) && (
-            <Text style={styles.infoText}>
-              {recipe.temperature ? `🌡️ ${recipe.temperature} °C` : ""}{" "}
-              {recipe.time ? `⏱️ ${recipe.time} dk` : ""}
-            </Text>
-          )}
+        <View style={styles.cookingInfo}>
+  {recipe.temperature && (
+    <View style={styles.infoBox}>
+      <Text style={styles.infoLabel}>🌡️ Sıcaklık</Text>
+      <Text style={styles.infoValue}>{recipe.temperature} °C</Text>
+    </View>
+  )}
+  {recipe.time && (
+    <View style={styles.infoBox}>
+      <Text style={styles.infoLabel}>⏱️ Süre</Text>
+      <Text style={styles.infoValue}>{recipe.time} dk</Text>
+    </View>
+  )}
+</View>
+
         </View>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Home")}>
           <Text style={styles.backButtonText}>Anasayfa</Text>
@@ -74,19 +88,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 20,
     padding: 20,
-    width: "100%",
+    width: "94%",
+    alignSelf: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#FF6F00",
-    textAlign: "center",
-    marginBottom: 6,
-  },
+title: {
+  fontSize: 28,
+  fontWeight: "bold",
+  color: "#FF6F00",
+  textAlign: "center",
+  marginBottom: 10,
+  textShadowColor: "#FF6F0066", // hafif gölge
+  textShadowOffset: { width: 1, height: 1 },
+  textShadowRadius: 2,
+},
   category: {
     fontSize: 16,
     color: "#888",
@@ -143,4 +161,28 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  cookingInfo: {
+  flexDirection: "row",
+  justifyContent: "space-around",
+  marginTop: 10,
+},
+infoBox: {
+  backgroundColor: "#FFF5E6",
+  borderRadius: 12,
+  padding: 12,
+  alignItems: "center",
+  minWidth: 100,
+},
+infoLabel: {
+  fontSize: 14,
+  color: "#FF6F00",
+  fontWeight: "600",
+  marginBottom: 4,
+},
+infoValue: {
+  fontSize: 16,
+  fontWeight: "bold",
+  color: "#333",
+},
+
 });

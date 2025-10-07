@@ -65,11 +65,7 @@ const AddRecipeScreen = ({ navigation }: any) => {
           onChangeText={setTitle}
         />
 
-    <ScrollView
-  horizontal={false} 
-  showsHorizontalScrollIndicator={false}
-  style={{ marginVertical: 10 }}
->
+   <ScrollView horizontal={false} showsHorizontalScrollIndicator={false} style={{ marginVertical: 10 }}>
   <View style={styles.chipsWrapper}>
     {categories.map((cat) => (
       <TouchableOpacity
@@ -169,13 +165,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  saveButton: {
-    backgroundColor: "#FF6F00",
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginTop: 20,
-    cursor: "pointer",
-  },
+saveButton: {
+  backgroundColor: "#FF6F00",
+  paddingVertical: 16,
+  borderRadius: 30,
+  marginTop: 20,
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 6,
+  elevation: 4,
+},
   saveButtonText: {
     color: "#fff",
     textAlign: "center",
@@ -183,17 +182,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   backButton: {
-    backgroundColor: "#f59ad7ff",
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginTop: 20,
-    cursor: "pointer",
+  backgroundColor: "#f59ad7ff",
+  paddingVertical: 16,
+  borderRadius: 30,
+  marginTop: 20,
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 6,
+  elevation: 4,
   },
   chipsWrapper: {
   flexDirection: "row",
   flexWrap: "wrap",      
   justifyContent: "space-between", 
   marginVertical: 10,
+  gap:8
 },
  categoryChip: {
   paddingVertical: 8,
