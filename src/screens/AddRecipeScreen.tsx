@@ -1,27 +1,29 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const categories = ["Main Course", "Dessert", "Drink", "Pastry"];
+const categories = ["Ana Yemek", "Tatlı", "İçecek", "Hamur İşi", "Atıştırmalık"];
 
 const AddRecipeScreen = ({ navigation }: any) => {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [ingredients, setIngredients] = useState("");
   const [instructions, setInstructions] = useState("");
-
+  const [temperature, setTemperature] = useState("");
+  const [time, setTime] = useState("");
 
   const handleSave = async () => {
-    if (!title || !category || !ingredients || !instructions) {
-      Alert.alert("Missing Field", "Please fill in all fields.");
+    if (!title || !category || !ingredients || !instructions || !temperature || !time) {
+      Alert.alert("Eksik Alan", "Lütfen tüm alanları doldurunuz.");
       return;
     }
 
@@ -31,56 +33,61 @@ const AddRecipeScreen = ({ navigation }: any) => {
       category,
       ingredients,
       instructions,
+      temperature,
+      time,
     };
 
     try {
-     
       const storedData = await AsyncStorage.getItem("recipes");
       const existingRecipes = storedData ? JSON.parse(storedData) : [];
 
- 
       const updatedRecipes = [...existingRecipes, newRecipe];
-
 
       await AsyncStorage.setItem("recipes", JSON.stringify(updatedRecipes));
 
-      Alert.alert("Success", "Recipe added successfully!");
+      Alert.alert("Başarılı", "Tarif başarıyla eklendi!");
       navigation.goBack();
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "An error occurred while saving the recipe.");
+      Alert.alert("Hata", "Tarif kaydedilirken bir hata oluştu.");
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.header}>Add New Recipe</Text>
+        <Text style={styles.header}>Yeni Tarif Ekle</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Recipe Title"
+          placeholder="Tarif başlığı"
           value={title}
           onChangeText={setTitle}
         />
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 10 }}>
-          {categories.map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              style={[styles.categoryChip, category === cat && styles.categoryChipSelected]}
-              onPress={() => setCategory(cat)}
-            >
-              <Text style={category === cat ? styles.categoryTextSelected : styles.categoryText}>
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+    <ScrollView
+  horizontal={false} 
+  showsHorizontalScrollIndicator={false}
+  style={{ marginVertical: 10 }}
+>
+  <View style={styles.chipsWrapper}>
+    {categories.map((cat) => (
+      <TouchableOpacity
+        key={cat}
+        style={[styles.categoryChip, category === cat && styles.categoryChipSelected]}
+        onPress={() => setCategory(cat)}
+      >
+        <Text style={category === cat ? styles.categoryTextSelected : styles.categoryText}>
+          {cat}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+</ScrollView>
 
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Materials (one per line)"
+          placeholder="Malzemeler (satır başına bir tane)"
           value={ingredients}
           onChangeText={setIngredients}
           multiline
@@ -88,19 +95,35 @@ const AddRecipeScreen = ({ navigation }: any) => {
 
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Preparation Steps"
+          placeholder="Hazırlık Adımları"
           value={instructions}
           onChangeText={setInstructions}
           multiline
         />
 
+       
+        <TextInput
+          style={styles.input}
+          placeholder="Pişirme Sıcaklığı (°C)"
+          value={temperature}
+          onChangeText={setTemperature}
+          keyboardType="numeric"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Pişirme Süresi (dakika)"
+          value={time}
+          onChangeText={setTime}
+          keyboardType="numeric"
+        />
+
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
+          <Text style={styles.saveButtonText}>Kaydet</Text>
         </TouchableOpacity>
 
-        
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
-          <Text style={styles.saveButtonText}>Home</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Home")}>
+          <Text style={styles.saveButtonText}>Anasayfa</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -112,7 +135,7 @@ export default AddRecipeScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFF7F0", 
   },
   container: {
     padding: 20,
@@ -123,23 +146,6 @@ const styles = StyleSheet.create({
     color: "#FF6F00",
     marginBottom: 15,
     textAlign: "center",
-  },
-  imagePicker: {
-    backgroundColor: "#f5f5f5",
-    height: 180,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  imagePlaceholder: {
-    color: "#aaa",
-    fontSize: 16,
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 10,
   },
   input: {
     borderWidth: 1,
@@ -152,13 +158,6 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     textAlignVertical: "top",
-  },
-  categoryChip: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    backgroundColor: "#eee",
-    borderRadius: 20,
-    marginRight: 8,
   },
   categoryChipSelected: {
     backgroundColor: "#FF6F00",
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 10,
     marginTop: 20,
-    cursor: "pointer"
+    cursor: "pointer",
   },
   saveButtonText: {
     color: "#fff",
@@ -184,11 +183,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   backButton: {
-    backgroundColor: "#f6a3d8ff",
+    backgroundColor: "#f59ad7ff",
     paddingVertical: 15,
     borderRadius: 10,
     marginTop: 20,
-    cursor: "pointer"
+    cursor: "pointer",
   },
-
+  chipsWrapper: {
+  flexDirection: "row",
+  flexWrap: "wrap",      
+  justifyContent: "space-between", 
+  marginVertical: 10,
+},
+ categoryChip: {
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  backgroundColor: "#eee",
+  borderRadius: 20,
+  marginBottom: 10,       
+  width: "30%",            
+  alignItems: "center",
+},
 });

@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -11,43 +10,42 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/Feather";
 import AddRecipeButton from "../components/AddRecipeButton";
-import RecipeCard from "../components/RecipeCard";
-
-const categories = ["All", "Main Course", "Dessert", "Drink", "Pastry"];
 
 interface Recipe {
   id: string;
   title: string;
-  image: string;
+  image?: string;
   category: string;
+  ingredients: string;
+  instructions: string;
 }
 
+const categories = ["Tümü", "Ana Yemek", "Tatlı", "İçecek", "Hamur İşi", "Atıştırmalık"];
+
 const HomeScreen = ({ navigation }: any) => {
-  const [selectedCategory, setSelectedCategory] = useState("All");
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("Tümü");
 
   useEffect(() => {
     const loadRecipes = async () => {
       try {
         const stored = await AsyncStorage.getItem("recipes");
-        if (stored) {
-          setRecipes(JSON.parse(stored));
-        }
-      } catch (err) {
-        console.log("Error loading recipes:", err);
+        if (stored) setRecipes(JSON.parse(stored));
+      } catch (error) {
+        console.log("Tarifler yüklenirken hata:", error);
       }
     };
     const unsubscribe = navigation.addListener("focus", loadRecipes);
     return unsubscribe;
   }, [navigation]);
 
-
   const handleDelete = async (id: string) => {
-    Alert.alert("Delete Recipe", "Are you sure you want to delete this recipe?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert("Tarifi Sil", "Bu tarifi silmek istediğine emin misin?", [
+      { text: "Vazgeç", style: "cancel" },
       {
-        text: "Delete",
+        text: "Sil",
         style: "destructive",
         onPress: async () => {
           const updated = recipes.filter((r) => r.id !== id);
@@ -59,66 +57,69 @@ const HomeScreen = ({ navigation }: any) => {
   };
 
   const filteredRecipes =
-    selectedCategory === "All"
+    selectedCategory === "Tümü"
       ? recipes
       : recipes.filter((r) => r.category === selectedCategory);
 
+  const renderItem = ({ item, index }: { item: Recipe; index: number }) => (
+    <TouchableOpacity
+      style={[
+        styles.recipeCard,
+        { backgroundColor: index % 2 === 0 ? "#FFF5E6" : "#FFFFFF" },
+      ]}
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate("RecipeDetail", { recipe: item })}
+    >
+      <View style={styles.recipeInfo}>
+        <Text style={styles.recipeTitle}>{item.title}</Text>
+        <Text style={styles.recipeCategory}>{item.category}</Text>
+      </View>
+      <TouchableOpacity onPress={() => handleDelete(item.id)}>
+        <Icon name="trash-2" size={22} color="#FF6F00" />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFF7F0" />
       <View style={styles.container}>
-        {/* Kategori Chips */}
-        <View style={styles.chipsWrapper}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 5 }}
-          >
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat}
-                style={[styles.chip, selectedCategory === cat && styles.chipSelected]}
-                onPress={() => setSelectedCategory(cat)}
-              >
-                <Text
-                  style={
-                    selectedCategory === cat ? styles.chipTextSelected : styles.chipText
-                  }
-                >
-                  {cat}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Tarifler */}
-        <FlatList
-          data={filteredRecipes}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.recipeRow}>
-              <RecipeCard
-                title={item.title}
-                onPress={() =>
-                  navigation.navigate("RecipeDetail", { recipe: item })
+      <Text style={styles.headerText}>Kitchenary</Text>
+        <View style={styles.categoryGrid}>
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[
+                styles.chip,
+                selectedCategory === cat && styles.chipSelected,
+              ]}
+              onPress={() => setSelectedCategory(cat)}
+            >
+              <Text
+                style={
+                  selectedCategory === cat
+                    ? styles.chipTextSelected
+                    : styles.chipText
                 }
-              />
-              <TouchableOpacity
-                onPress={() => handleDelete(item.id)}
-                style={styles.deleteButton}
               >
-                <Text style={styles.deleteText}>🗑️</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          contentContainerStyle={{ paddingBottom: 150, paddingTop: 10 }}
-        />
-
-        {/* Add Recipe Button */}
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>        
+        {filteredRecipes.length === 0 ? (
+          <Text style={styles.emptyText}>Henüz tarif eklenmemiş 🥄</Text>
+        ) : (
+          <FlatList
+            data={filteredRecipes}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 150, paddingTop: 10 }}
+          />
+        )}
         <AddRecipeButton
           onPress={() => navigation.navigate("AddRecipe")}
-          title={"+ Add Recipe"}
+          title={"+ Tarif Ekle"}
         />
       </View>
     </SafeAreaView>
@@ -130,45 +131,77 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
+      backgroundColor: "#FFF7F0", 
   },
   container: {
     flex: 1,
     paddingHorizontal: 15,
     paddingTop: 10,
   },
-  chipsWrapper: {
-    marginBottom: 15,
+  categoryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
   chip: {
+    width: "30%", 
     paddingVertical: 10,
-    paddingHorizontal: 14,
-    backgroundColor: "#eee",
-    borderRadius: 20,
-    marginRight: 8,
+    backgroundColor: "#FFE6CC",
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
   },
   chipSelected: {
     backgroundColor: "#FF6F00",
   },
   chipText: {
     color: "#333",
+    fontSize: 15,
+    fontWeight: "500",
   },
   chipTextSelected: {
     color: "#fff",
     fontWeight: "bold",
   },
-  recipeRow: {
+  recipeCard: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    padding: 15,
+    borderRadius: 14,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+    elevation: 3,
   },
-  deleteButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: "#ffebee",
+  recipeInfo: {
+    flex: 1,
+    marginRight: 10,
   },
-  deleteText: {
-    fontSize: 20,
+  recipeTitle: {
+    fontSize: 17,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  recipeCategory: {
+    fontSize: 14,
+    color: "#FF6F00",
+    marginTop: 3,
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#999",
+    marginTop: 50,
+    fontSize: 16,
+  },
+  headerText: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#FF6F00", 
+    textAlign: "center", 
   },
 });
