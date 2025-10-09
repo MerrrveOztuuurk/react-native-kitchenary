@@ -39,30 +39,37 @@ const categories: Category[] = [
   { name: "Atıştırmalık", image: require("../assets/image/snack.jpg") },
 ];
 
-const getImageSource = (
-  image?: string | ImageSourcePropType
-): ImageSourcePropType | undefined => {
+const getImageSource = (image?: string | ImageSourcePropType): ImageSourcePropType | undefined => {
   if (!image) return undefined;
+
   if (typeof image === "string") {
-    return image.startsWith("http") ? { uri: image } : undefined;
+    return { uri: image };
   }
+
   return image;
 };
 
 const HomeScreen = ({ navigation }: any) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("Tümü");
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
-    const loadRecipes = async () => {
+    const loadData = async () => {
       try {
-        const stored = await AsyncStorage.getItem("recipes");
-        if (stored) setRecipes(JSON.parse(stored));
+        const storedRecipes = await AsyncStorage.getItem("recipes");
+        if (storedRecipes) setRecipes(JSON.parse(storedRecipes));
+
+        const storedFavorites = await AsyncStorage.getItem("favorites");
+        if (storedFavorites) {
+          const favList = JSON.parse(storedFavorites);
+          setFavorites(favList.map((f: Recipe) => f.id));
+        }
       } catch (error) {
-        console.log("Tarifler yüklenirken hata:", error);
+        console.log("Veri yüklenirken hata:", error);
       }
     };
-    const unsubscribe = navigation.addListener("focus", loadRecipes);
+    const unsubscribe = navigation.addListener("focus", loadData);
     return unsubscribe;
   }, [navigation]);
 
@@ -76,9 +83,33 @@ const HomeScreen = ({ navigation }: any) => {
           const updated = recipes.filter((r) => r.id !== id);
           setRecipes(updated);
           await AsyncStorage.setItem("recipes", JSON.stringify(updated));
+
+          const updatedFavs = favorites.filter((fid) => fid !== id);
+          setFavorites(updatedFavs);
+          const storedFavs = await AsyncStorage.getItem("favorites");
+          if (storedFavs) {
+            const favList = JSON.parse(storedFavs).filter((f: Recipe) => f.id !== id);
+            await AsyncStorage.setItem("favorites", JSON.stringify(favList));
+          }
         },
       },
     ]);
+  };
+
+  const toggleFavorite = async (recipe: Recipe) => {
+    let storedFavorites = await AsyncStorage.getItem("favorites");
+    let favList: Recipe[] = storedFavorites ? JSON.parse(storedFavorites) : [];
+
+    const isFavorite = favList.some((f) => f.id === recipe.id);
+
+    if (isFavorite) {
+      favList = favList.filter((f) => f.id !== recipe.id);
+    } else {
+      favList.push(recipe);
+    }
+
+    setFavorites(favList.map((f) => f.id));
+    await AsyncStorage.setItem("favorites", JSON.stringify(favList));
   };
 
   const filteredRecipes =
@@ -86,39 +117,54 @@ const HomeScreen = ({ navigation }: any) => {
       ? recipes
       : recipes.filter((r) => r.category === selectedCategory);
 
-  const renderRecipe = ({ item }: { item: Recipe }) => (
-    <TouchableOpacity
-      style={styles.recipeCard}
-      activeOpacity={0.9}
-      onPress={() => navigation.navigate("RecipeDetail", { recipe: item })}
-    >
-      <View style={styles.recipeRow}>
-        {item.image ? (
-          <Image
-            source={getImageSource(item.image)}
-            style={styles.recipeImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={styles.recipeImagePlaceholder}>
-            <Ionicons name="camera-outline" size={32} color="#bbb" />
+  const renderRecipe = ({ item }: { item: Recipe }) => {
+    const isFavorite = favorites.includes(item.id);
+
+    return (
+      <TouchableOpacity
+        style={styles.recipeCard}
+        activeOpacity={0.9}
+        onPress={() => navigation.navigate("RecipeDetail", { recipe: item })}
+      >
+        <View style={styles.recipeRow}>
+          {item.image ? (
+            <Image
+              source={getImageSource(item.image)}
+              style={styles.recipeImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.recipeImagePlaceholder}>
+              <Ionicons name="camera-outline" size={32} color="#bbb" />
+            </View>
+          )}
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.recipeTitle}>{item.title}</Text>
+            <Text style={styles.recipeCategory}>{item.category}</Text>
           </View>
-        )}
 
-        <View style={{ flex: 1 }}>
-          <Text style={styles.recipeTitle}>{item.title}</Text>
-          <Text style={styles.recipeCategory}>{item.category}</Text>
+          {/* Favori butonu */}
+          <TouchableOpacity onPress={() => toggleFavorite(item)}>
+            <Ionicons
+              name={isFavorite ? "heart" : "heart-outline"}
+              size={22}
+              color={isFavorite ? "#FF6F00" : "#999"}
+              style={{ marginHorizontal: 6 }}
+            />
+          </TouchableOpacity>
+
+          {/* Sil butonu */}
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDelete(item.id)}
+          >
+            <Icon name="trash-2" size={20} color="#FF6F00" />
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDelete(item.id)}
-        >
-          <Icon name="trash-2" size={20} color="#FF6F00" />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   const renderCategory = ({ item }: { item: Category }) => {
     const isSelected = selectedCategory === item.name;
@@ -146,7 +192,16 @@ const HomeScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right", "bottom"]}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF7F0" />
       <View style={styles.container}>
-        <Text style={styles.headerText}>Kitchenary</Text>
+        {/* Başlık + Favoriler butonu */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+          <Text style={styles.headerText}>Kitchenary</Text>
+          <TouchableOpacity
+            style={{ position: "absolute", right: 10 }}
+            onPress={() => navigation.navigate("Favorites")}
+          >
+            <Ionicons name="heart" size={26} color="#FF6F00" />
+          </TouchableOpacity>
+        </View>
 
         {/* Kategori listesi */}
         <FlatList
@@ -161,7 +216,7 @@ const HomeScreen = ({ navigation }: any) => {
 
         <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 8 }}>Tarifler</Text>
         {filteredRecipes.length === 0 ? (
-          <Text style={styles.emptyText}>Henüz tarif eklenmemiş 🥄</Text>
+          <Text style={styles.emptyText}>Henüz tarif eklenmemiş!</Text>
         ) : (
           <FlatList
             data={filteredRecipes}
@@ -279,7 +334,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   deleteButton: {
-    marginLeft: 10,
+    marginLeft: 6,
     padding: 6,
     borderRadius: 20,
     backgroundColor: "#FFF3E0",

@@ -1,6 +1,7 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import React from "react";
 import {
+  Dimensions,
   Image,
   ScrollView,
   StyleSheet,
@@ -9,6 +10,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/Feather";
+
+const { width } = Dimensions.get("window");
 
 interface Recipe {
   id: string;
@@ -21,7 +25,10 @@ interface Recipe {
   time: string;
 }
 
-type RecipeDetailRouteProp = RouteProp<{ RecipeDetail: { recipe: Recipe } }, "RecipeDetail">;
+type RecipeDetailRouteProp = RouteProp<
+  { RecipeDetail: { recipe: Recipe } },
+  "RecipeDetail"
+>;
 
 const RecipeDetailScreen = ({ navigation }: any) => {
   const route = useRoute<RecipeDetailRouteProp>();
@@ -29,57 +36,65 @@ const RecipeDetailScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+          <Icon name="arrow-left" size={26} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Tarif Detayı</Text>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
-          {/* GÖRSEL */}
           {recipe.image ? (
             <Image source={{ uri: recipe.image }} style={styles.image} />
           ) : (
-            <View style={styles.placeholder} />
+            <View style={styles.placeholder}>
+              <Icon name="camera" size={60} color="#FFB266" />
+            </View>
           )}
 
-          <Text style={styles.title}>{recipe.title}</Text>
-          <Text style={styles.category}>{recipe.category}</Text>
+          <View style={styles.overlayCard}>
+            <Text style={styles.title}>{recipe.title}</Text>
+            <Text style={styles.category}>{recipe.category}</Text>
+          </View>
 
-          <Text style={styles.sectionTitle}>Malzemeler</Text>
-          <Text style={styles.text}>
-            {recipe.ingredients
-              ? recipe.ingredients.split("\n").map((line, i) => (
-                  <Text key={i} style={styles.text}>
-                    • {line}{" "}
-                  </Text>
-                ))
-              : <Text style={styles.text}>Malzeme bilgisi eklenmemiş.</Text>}
-          </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Malzemeler</Text>
+            <Text style={styles.text}>
+              {recipe.ingredients
+                ? recipe.ingredients
+                    .split("\n")
+                    .map((line, i) => `• ${line}`)
+                    .join("\n")
+                : "Malzeme bilgisi eklenmemiş."}
+            </Text>
+          </View>
 
-          <Text style={styles.sectionTitle}>Yapılışı</Text>
-          <Text style={styles.text}>
-            {recipe.instructions ? recipe.instructions : "Yapılış bilgisi eklenmemiş."}
-          </Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Yapılışı</Text>
+            <Text style={styles.text}>
+              {recipe.instructions || "Yapılış bilgisi eklenmemiş."}
+            </Text>
+          </View>
 
-          <Text style={styles.sectionTitle}>Pişirme Bilgileri</Text>
-          <View style={styles.cookingInfo}>
-            {recipe.temperature && (
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>🌡️ Sıcaklık</Text>
-                <Text style={styles.infoValue}>{recipe.temperature} °C</Text>
-              </View>
-            )}
-            {recipe.time && (
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>⏱️ Süre</Text>
-                <Text style={styles.infoValue}>{recipe.time} dk</Text>
-              </View>
-            )}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Pişirme Bilgileri</Text>
+            <View style={styles.cookingInfo}>
+              {recipe.temperature && (
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoLabel}>🌡️ Sıcaklık</Text>
+                  <Text style={styles.infoValue}>{recipe.temperature} °C</Text>
+                </View>
+              )}
+              {recipe.time && (
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoLabel}>⏱️ Süre</Text>
+                  <Text style={styles.infoValue}>{recipe.time} dk</Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
-
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate("Home")}
-        >
-          <Text style={styles.backButtonText}>Anasayfa</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -90,104 +105,105 @@ export default RecipeDetailScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFF7F0",
+    backgroundColor: "#FFF8F0",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    backgroundColor: "#FF6F00",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 6,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#fff",
+    marginLeft: 12,
   },
   scrollContent: {
-    padding: 20,
+    padding: 18,
     alignItems: "center",
   },
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
     borderRadius: 20,
-    padding: 20,
-    width: "94%",
-    alignSelf: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    alignItems: "center",
+    shadowRadius: 10,
+    elevation: 6,
+    overflow: "hidden",
+    width: width * 0.9,
   },
   image: {
     width: "100%",
-    height: 200,
-    borderRadius: 16,
-    marginBottom: 15,
+    height: 240,
     resizeMode: "cover",
   },
   placeholder: {
     width: "100%",
-    height: 200,
-    borderRadius: 16,
-    marginBottom: 15,
-    backgroundColor: "#FFE6CC",
+    height: 240,
+    backgroundColor: "#FFF0E0",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  overlayCard: {
+    marginTop: -50,
+    backgroundColor: "#ffffffdd",
+    marginHorizontal: 20,
+    borderRadius: 14,
+    padding: 12,
+    alignItems: "center",
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#FF6F00",
     textAlign: "center",
-    marginBottom: 10,
-    textShadowColor: "#FF6F0066",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
   },
   category: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#888",
-    textAlign: "center",
-    marginBottom: 16,
+    marginTop: 4,
+  },
+  section: {
+    marginHorizontal: 20,
+    marginTop: 20,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: "#333",
-    marginTop: 15,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   text: {
     fontSize: 16,
     color: "#555",
-    lineHeight: 24,
-  },
-  backButton: {
-    marginTop: 25,
-    backgroundColor: "#FF8FA3",
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  backButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    lineHeight: 22,
   },
   cookingInfo: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 10,
-    width: "100%",
+    justifyContent: "space-evenly",
+    marginTop: 12,
   },
   infoBox: {
     backgroundColor: "#FFF5E6",
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 12,
+    minWidth: 110,
     alignItems: "center",
-    minWidth: 100,
   },
   infoLabel: {
     fontSize: 14,
     color: "#FF6F00",
     fontWeight: "600",
-    marginBottom: 4,
   },
   infoValue: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#333",
+    marginTop: 4,
   },
 });
