@@ -123,6 +123,7 @@ const AddRecipeScreen = ({ navigation }: any) => {
         <TextInput
           style={styles.input}
           placeholder="Tarif başlığı"
+           placeholderTextColor="#999" 
           value={title}
           onChangeText={setTitle}
         />
@@ -144,6 +145,7 @@ const AddRecipeScreen = ({ navigation }: any) => {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Malzemeler (satır başına bir tane)"
+           placeholderTextColor="#999" 
           value={ingredients}
           onChangeText={setIngredients}
           multiline
@@ -152,6 +154,7 @@ const AddRecipeScreen = ({ navigation }: any) => {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Hazırlık Adımları"
+           placeholderTextColor="#999" 
           value={instructions}
           onChangeText={setInstructions}
           multiline
@@ -160,6 +163,7 @@ const AddRecipeScreen = ({ navigation }: any) => {
         <TextInput
           style={styles.input}
           placeholder="Pişirme Sıcaklığı (°C)"
+           placeholderTextColor="#999" 
           value={temperature}
           onChangeText={setTemperature}
           keyboardType="numeric"
@@ -168,6 +172,7 @@ const AddRecipeScreen = ({ navigation }: any) => {
         <TextInput
           style={styles.input}
           placeholder="Pişirme Süresi (dakika)"
+           placeholderTextColor="#999" 
           value={time}
           onChangeText={setTime}
           keyboardType="numeric"
